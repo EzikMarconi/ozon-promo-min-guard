@@ -1,0 +1,34 @@
+# Креды и локальные данные
+config.json
+.env
+.env.*
+
+# Отчёты (содержат данные магазина)
+report.json
+report.csv
+*.report.json
+*.report.csv
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Временные и отладочные файлы
+_test_*.py
+*.log
