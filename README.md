@@ -120,9 +120,9 @@ ozon-promo-min-guard/
 | Список акций | `GET /v1/actions` |
 | Участвующие товары в акции | `POST /v1/actions/products` |
 | Минимальные цены товаров | `POST /v5/product/info/prices` |
-| Товары авто-добавления в акции | `POST /v1/actions/auto-add/products/list` |
+| Товары авто-добавления в акции | `POST /v2/actions/auto-add/products/list` |
 | Удаление участвующих товаров | `POST /v1/actions/products/deactivate` |
-| Удаление из очереди авто-добавления | `POST /v1/actions/auto-add/products/delete` |
+| Удаление из очереди авто-добавления | `POST /v2/actions/auto-add/products/delete` |
 
 ## Логика сравнения цен
 

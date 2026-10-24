@@ -147,13 +147,16 @@ class OzonClient:
                 "limit": limit,
                 "offset": offset,
             }
-            data = self._post("/v1/actions/auto-add/products/list", payload)
+            data = self._post("/v2/actions/auto-add/products/list", payload)
             items = data.get("products", [])
             products.extend(items)
 
             offset += len(items)
+            total = data.get("total")
 
             if not items or len(items) < limit:
+                break
+            if isinstance(total, int) and offset >= total:
                 break
 
         return products
@@ -175,7 +178,7 @@ class OzonClient:
             "auto_add_date": auto_add_date,
             "product_ids": product_ids,
         }
-        return self._post("/v1/actions/auto-add/products/delete", payload)
+        return self._post("/v2/actions/auto-add/products/delete", payload)
 
     def get_action_products(self, action_id: int) -> list[dict[str, Any]]:
         """Получить товары, уже участвующие в акции (с пагинацией).

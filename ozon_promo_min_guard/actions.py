@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import sys
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -54,7 +55,13 @@ class ActionProduct:
 
 
 def _as_float(value: Any) -> float | None:
-    """Привести значение к float; None и пустые значения — в None."""
+    """Привести значение к float; None и пустые значения — в None.
+
+    Метод ``/v2/actions/auto-add/products/list`` отдаёт цены объектом
+    ``{"amount": "1176", "currency": "RUB"}``, старые ответы — числом.
+    """
+    if isinstance(value, dict):
+        value = value.get("amount")
     if value is None or value == "":
         return None
     try:
@@ -148,7 +155,23 @@ def _find_auto_add_below_min(
             continue
 
         for auto_add_date in auto_add_dates:
-            products = client.get_auto_add_products(int(action_id), auto_add_date)
+            try:
+                products = client.get_auto_add_products(int(action_id), auto_add_date)
+            except OzonApiError as exc:
+                if "blocked" in str(exc).lower():
+                    print(
+                        "Предупреждение: OZON заблокировал метод очереди "
+                        "авто-добавления (логика единой цены). Очередь "
+                        "авто-добавления не проверяется.",
+                        file=sys.stderr,
+                    )
+                    return found
+                print(
+                    f"Предупреждение: не удалось получить очередь "
+                    f"авто-добавления акции {action_id}: {exc}",
+                    file=sys.stderr,
+                )
+                continue
 
             for product in products:
                 product_id_raw = product.get("product_id")
@@ -194,7 +217,7 @@ def find_products_below_min_price(
     1. **Участвующие товары** — ``POST /v1/actions/products`` +
        ``POST /v5/product/info/prices``. Совпадает с интерфейсом OZON
        (колонка «Цена по этой акции» vs «Минимальная цена»).
-    2. **Очередь авто-добавления** — ``POST /v1/actions/auto-add/products/list``.
+    2. **Очередь авто-добавления** — ``POST /v2/actions/auto-add/products/list``.
        Товары, которые ещё не в акции, но будут добавлены по заниженной цене.
 
     Args:
@@ -221,7 +244,7 @@ def delete_products_from_action(
 
     Участвующие товары удаляются через ``/v1/actions/products/deactivate``,
     товары из очереди авто-добавления — через
-    ``/v1/actions/auto-add/products/delete``.
+    ``/v2/actions/auto-add/products/delete``.
 
     Ошибка API для одной группы не прерывает удаление остальных.
 
